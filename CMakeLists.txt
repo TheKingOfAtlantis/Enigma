@@ -34,6 +34,7 @@ target_link_libraries(libEnigma
 
 # Set the list of source files
 set(ENIGMA_SOURCE_INTERFACE
+    "src/Maths/Geometry.cxx" 
 )
 set(ENIGMA_SOURCE_IMPLEMENTATION
 )
