@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <concepts>
 #include <tuple>
+#include <vector>
 
 export module Enigma.Util.Enum;
 
@@ -55,6 +56,41 @@ export namespace Enigma {
 	template<Enumeration Flag> constexpr bool hasFlag(Flag toCheck, Flag check) noexcept {
 		return to_value(toCheck) & to_value(check);
 	}
+
+	//
+	// Vector-based Implementations
+	//
+
+	template<Enumeration Enum> constexpr auto joinFlags(std::vector<Enum> flags) noexcept {
+		std::underlying_type_t<Enum> result = 0;
+		for(auto flag : flags)
+			result |= to_value(flag);
+		return to_Enum<Enum>(result);
+	}
+	template<Enumeration Enum> constexpr auto removeFlags(Enum flag, std::vector<Enum> toRemove) noexcept {
+		std::underlying_type_t<Enum> result = to_value(flag);
+		for(auto remove : toRemove)
+			result &= ~to_value(remove);
+		return to_Enum<Enum> (result);
+	}
+	template<Enumeration Flag> constexpr bool hasAll(Flag toCheck, std::vector<Flag> check) noexcept {
+		for(auto value : check)
+			if(!hasFlag(toCheck, value))
+				return false;
+		return true;
+	}
+	template<Enumeration Flag> constexpr bool hasAny(Flag toCheck, std::vector<Flag> check) noexcept {
+		for(auto value : check)
+			if(hasFlag(toCheck, value))
+				return true;
+		return false;
+	}
+	
+		
+	////
+	//// Variadic-based Implementations
+	////
+
 
 	/**
 	 * @brief Joins a series of enums together (via bitwise OR)

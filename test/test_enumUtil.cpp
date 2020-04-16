@@ -59,6 +59,67 @@ TEST_F(EnumUtility, Inversibility_value) {
 	});
 }
 
+TEST_F(EnumUtility, joinFlag_vector) {
+	EXPECT_EQ(
+		TestEnum::ABC,
+		Enigma::joinFlags(std::vector{ TestEnum::A, TestEnum::B, TestEnum::C })
+	);
+	EXPECT_EQ(
+		TestEnum::AB,
+		Enigma::joinFlags(std::vector{ TestEnum::A, TestEnum::B })
+	);
+	EXPECT_EQ(
+		TestEnum::AC,
+		Enigma::joinFlags(std::vector{ TestEnum::A, TestEnum::C })
+	);
+	EXPECT_EQ(
+		TestEnum::BC,
+		Enigma::joinFlags(std::vector{ TestEnum::B, TestEnum::C })
+	);
+}
+
+TEST_F(EnumUtility, removeFlag_vector) {
+	// Test passing one parameter 
+	EXPECT_EQ(
+		TestEnum::AC,
+		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::B })
+	);
+	EXPECT_EQ(
+		TestEnum::AB,
+		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::C })
+	);
+	EXPECT_EQ(
+		TestEnum::AB,
+		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::C })
+	);
+
+	// Test passing two parameters 
+	EXPECT_EQ(
+		TestEnum::A,
+		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::B, TestEnum::C })
+	);
+	EXPECT_EQ(
+		TestEnum::B,
+		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::A, TestEnum::C })
+	);
+	EXPECT_EQ(
+		TestEnum::C,
+		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::A, TestEnum::B })
+	);
+
+	// Test passing all three parameters
+	EXPECT_EQ(
+		TestEnum::Null,
+		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::A, TestEnum::B, TestEnum::C })
+	);
+	// Test passing an arbitrary sequence of bits
+	EXPECT_EQ(
+		TestEnum::Null,
+		Enigma::removeFlags(TestEnum::ABC, std::vector{Enigma::to_Enum<TestEnum>(0b1111111) })
+	);
+}
+
+
 
 TEST_F(EnumUtility, joinFlag_vararg) {
 	EXPECT_EQ(
