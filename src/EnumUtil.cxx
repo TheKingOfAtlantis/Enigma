@@ -14,6 +14,10 @@
 export module Enigma.Util.Enum;
 
 export namespace Enigma {
+
+	template<typename Enum>
+	concept Enumeration = std::is_enum_v<Enum>;
+
 	/**
 	 * @brief Retrieves the underlying value of a enum type
 	 *
@@ -22,7 +26,7 @@ export namespace Enigma {
 	 *
 	 * @return The enum's underlying value
 	 */
-	template<typename Enum> auto to_value(Enum value) noexcept {
+	template<Enumeration Enum> auto to_value(Enum value) noexcept {
 		return static_cast<std::underlying_type_t<Enum>>(value);
 	}
 
@@ -36,8 +40,20 @@ export namespace Enigma {
 	 *
 	 * @return Returns an Enum object with the underlying value given
 	 */
-	template<typename Enum, std::integral Type> auto to_Enum(Type value) noexcept {
+	template<Enumeration Enum, std::integral Type> auto to_Enum(Type value) noexcept {
 		return static_cast<Enum>(value);
+	}
+	/**
+	 * @brief Checks if a specific enum flag value is present
+	 *
+	 * @tparam Flag
+	 * @param [in] toCheck - Value to be checked against
+	 * @param [in] check - Value to check for in toCheck
+	 *
+	 * @return Whether it was detected (true) or not (false)
+	 */
+	template<Enumeration Flag> constexpr bool hasFlag(Flag toCheck, Flag check) noexcept {
+		return to_value(toCheck) & to_value(check);
 	}
 
 	/**
@@ -48,7 +64,7 @@ export namespace Enigma {
 	 *
 	 * @return The joined flags
 	 */
-	template<typename...Flag> constexpr auto joinFlags(Flag...flags) noexcept {
+	template<Enumeration...Flag> constexpr auto joinFlags(Flag...flags) noexcept {
 		// Get the first type by using std::tuple
 		typedef std::tuple_element_t<0, std::tuple<Flag...>> EnumType;
 		// Should be expanded to:
@@ -66,23 +82,11 @@ export namespace Enigma {
 	 *
 	 * @return New flag type without specified flags
 	 */
-	template<typename Flag, typename...Others>
-	constexpr Flag removeFlags(Flag flag, Others...toRemove) noexcept {
+	template<Enumeration Flag, Enumeration...Other>
+	constexpr Flag removeFlags(Flag flag, Other...toRemove) noexcept {
 		// Should be expanded to:
 		// (toCheck & flag1) && (toCheck & flag2) && ... && (toCheck & flagN)
 		return to_Enum<Flag>(to_value(flag) & ~to_value(joinFlags(toRemove...)));
-	}
-	/**
-	 * @brief Checks if a specific enum flag value is present
-	 *
-	 * @tparam Flag
-	 * @param [in] toCheck - Value to be checked against
-	 * @param [in] check - Value to check for in toCheck
-	 *
-	 * @return Whether it was detected (true) or not (false)
-	 */
-	template<typename Flag> constexpr bool hasFlag(Flag toCheck, Flag check) noexcept {
-		return to_value(toCheck) & to_value(check);
 	}
 	/**
 	 * @brief Checks if all the specified values are present in the flag
@@ -95,7 +99,7 @@ export namespace Enigma {
 	 *
 	 * @return Whether all specified values were detected (true) or not (false)
 	 */
-	template<typename Flag, typename...Others> constexpr bool hasAll(Flag toCheck, Others...check) noexcept {
+	template<Enumeration Flag, Enumeration...Others> constexpr bool hasAll(Flag toCheck, Others...check) noexcept {
 		// Should be expanded to:
 		// (toCheck & flag1) && (toCheck & flag2) && ... && (toCheck & flagN)
 		return (hasFlag(toCheck, check) && ...);
@@ -111,7 +115,7 @@ export namespace Enigma {
 	 *
 	 * @return Whether any specified values were detected (true) or not (false)
 	 */
-	template<typename Flag, typename...Others> constexpr bool hasAny(Flag toCheck, Others...check) noexcept {
+	template<Enumeration Flag, Enumeration...Others> constexpr bool hasAny(Flag toCheck, Others...check) noexcept {
 		// Should be expanded to:
 		// (toCheck & flag1) || (toCheck & flag2) || ... || (toCheck & flagN)
 		return (hasFlag(toCheck, check) || ...);
