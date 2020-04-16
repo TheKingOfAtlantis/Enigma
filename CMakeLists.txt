@@ -21,9 +21,12 @@ add_library(libEnigma STATIC "")
 find_package(Vulkan REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
 
+#
+# Setup compiler preprocessor defintions
+#
+
 target_compile_definitions(libEnigma PRIVATE
-    $<$<PLATFORM_ID:Windows>:VK_USE_PLATFORM_WIN32_KHR
-      $<$<PLATFORM_ID:Linux>:VK_USE_PLATFORM_LINUX_KHR>>
+    $<$<PLATFORM_ID:Windows>:VK_USE_PLATFORM_WIN32_KHR>
 )
 target_include_directories(libEnigma PRIVATE Vulkan::Vulkan)
 
@@ -34,6 +37,7 @@ target_link_libraries(libEnigma
 
 # Set the list of source files
 set(ENIGMA_SOURCE_INTERFACE
+    "src/EnumUtil.cxx"
     "src/Maths/Geometry.cxx" 
 )
 set(ENIGMA_SOURCE_IMPLEMENTATION
@@ -49,14 +53,14 @@ if(MSVC)
     set(ENIGMA_COMPILER_FLAGS_MODULE_INTERFACE       "/module:interface")                              # Specifies that a file in a module interface (regardless of file extension)
     set(ENIGMA_COMPILER_FLAGS_DEBUG                  "/JMC" "/Zi")                                     # Enables "Just my code" debugging and "Edit and Continue" support
 else()
-    set(ENIGMA_COMPILER_FLAGS_WARNING               )
-    set(ENIGMA_COMPILER_FLAGS_INSTRUCTION_SET       )
-    set(ENIGMA_COMPILER_FLAGS_EXTRA                 )
+    set(ENIGMA_COMPILER_FLAGS_WARNING         )
+    set(ENIGMA_COMPILER_FLAGS_INSTRUCTION_SET )
+    set(ENIGMA_COMPILER_FLAGS_EXTRA           )
     set(ENIGMA_COMPILER_FLAGS_MODULE          )
     set(ENIGMA_COMPILER_FLAGS_MODULE_SEARCH   )
     set(ENIGMA_COMPILER_FLAGS_MODULE_INTERFACE)
-    set(ENIGMA_COMPILER_FLAGS_DEBUG                 )
-    set(ENIGMA_COMPILER_FLAGS_MISC                  )
+    set(ENIGMA_COMPILER_FLAGS_DEBUG           )
+    set(ENIGMA_COMPILER_FLAGS_MISC            )
 endif()
 # Sets the core set of Enigma Compiler Flags
 set(ENIGMA_COMPILER_FLAGS
