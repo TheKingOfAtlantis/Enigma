@@ -21,18 +21,19 @@ add_library(libEnigma STATIC "")
 find_package(Vulkan REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
 
+target_include_directories(libEnigma PRIVATE Vulkan::Vulkan)
+
+target_link_libraries(libEnigma
+	PRIVATE Vulkan::Vulkan
+	        range-v3 range-v3-meta range-v3::meta range-v3-concepts
+)
+
 #
 # Setup compiler preprocessor defintions
 #
 
 target_compile_definitions(libEnigma PRIVATE
     $<$<PLATFORM_ID:Windows>:VK_USE_PLATFORM_WIN32_KHR>
-)
-target_include_directories(libEnigma PRIVATE Vulkan::Vulkan)
-
-target_link_libraries(libEnigma
-	PRIVATE Vulkan::Vulkan
-	        range-v3 range-v3-meta range-v3::meta range-v3-concepts
 )
 
 # Set the list of source files
@@ -45,13 +46,14 @@ set(ENIGMA_SOURCE_IMPLEMENTATION
 
 # Set the compiler flags
 if(MSVC)
-    set(ENIGMA_COMPILER_FLAGS_WARNING                "/W4")                                            # Warning level set to 4
-    set(ENIGMA_COMPILER_FLAGS_INSTRUCTION_SET        "/arch:AVX512")                                   # Enables the AVX512 instruction set extensions support
-    set(ENIGMA_COMPILER_FLAGS_MISC                   "/permissive-" "/await" "/MP" "/Zc:preprocessor") # Broad range of features
-    set(ENIGMA_COMPILER_FLAGS_MODULE                 "/experimental:module")                           # Enables support for C++20 modules
-    set(ENIGMA_COMPILER_FLAGS_MODULE_SEARCH          "/module:search ${CMAKE_CURRENT_BINARY_DIR}")     # Specifies the search path for precompiled modules
-    set(ENIGMA_COMPILER_FLAGS_MODULE_INTERFACE       "/module:interface")                              # Specifies that a file in a module interface (regardless of file extension)
-    set(ENIGMA_COMPILER_FLAGS_DEBUG                  "/JMC" "/Zi")                                     # Enables "Just my code" debugging and "Edit and Continue" support
+    set(ENIGMA_COMPILER_FLAGS_WARNING          "/W4")                                            # Warning level set to 4
+    set(ENIGMA_COMPILER_FLAGS_INSTRUCTION_SET  "/arch:AVX512")                                   # Enables the AVX512 instruction set extensions support
+    set(ENIGMA_COMPILER_FLAGS_MISC             "/permissive-" "/await" "/MP" "/Zc:preprocessor") # Broad range of features
+    set(ENIGMA_COMPILER_FLAGS_CONCEPTS         "/experimental:concepts")                         # Enables support for C++20 concepts
+    set(ENIGMA_COMPILER_FLAGS_MODULE           "/experimental:module")                           # Enables support for C++20 modules
+    set(ENIGMA_COMPILER_FLAGS_MODULE_SEARCH    "/module:search" ${CMAKE_CURRENT_BINARY_DIR})     # Specifies the search path for precompiled modules
+    set(ENIGMA_COMPILER_FLAGS_MODULE_INTERFACE "/module:interface")                              # Specifies that a file in a module interface (regardless of file extension)
+    set(ENIGMA_COMPILER_FLAGS_DEBUG            "/JMC" "/Zi")                                     # Enables "Just my code" debugging and "Edit and Continue" support
 else()
     set(ENIGMA_COMPILER_FLAGS_WARNING         )
     set(ENIGMA_COMPILER_FLAGS_INSTRUCTION_SET )
@@ -64,13 +66,14 @@ else()
 endif()
 # Sets the core set of Enigma Compiler Flags
 set(ENIGMA_COMPILER_FLAGS
-	${ENIGMA_COMPILER_FLAGS_WARNING}
-	${ENIGMA_COMPILER_FLAGS_INSTRUCTION_SET}
-	${ENIGMA_COMPILER_FLAGS_EXTRA}
-	${ENIGMA_COMPILER_FLAGS_MODULE}
-	${ENIGMA_COMPILER_FLAGS_MODULE_SEARCH}
-	$<$<CONFIG:Debug>:${ENIGMA_COMPILER_FLAGS_DEBUG}>
-	${ENIGMA_COMPILER_FLAGS_MISC}
+    ${ENIGMA_COMPILER_FLAGS_WARNING}
+    ${ENIGMA_COMPILER_FLAGS_INSTRUCTION_SET}
+    ${ENIGMA_COMPILER_FLAGS_EXTRA}
+    ${ENIGMA_COMPILER_FLAGS_CONCEPTS}
+    ${ENIGMA_COMPILER_FLAGS_MODULE}
+    ${ENIGMA_COMPILER_FLAGS_MODULE_SEARCH}
+    $<$<CONFIG:Debug>:${ENIGMA_COMPILER_FLAGS_DEBUG}>
+    ${ENIGMA_COMPILER_FLAGS_MISC}
 )
 
 set(ENIGMA_PUBLIC_COMPILER_FLAGS  ${ENIGMA_COMPILER_FLAGS} ${ENIGMA_COMPILER_FLAGS_MODULE_INTERFACE}) # The flags required for the module interface units

@@ -7,17 +7,21 @@
  * the union and interesection as well as querying flags
  */
 
-#include <type_traits>
+#if !defined(__cpp_lib_concepts)
+#	define __cpp_lib_concepts 201907L
+#endif
+
 #include <concepts>
+#include <ranges>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 export module Enigma.Util.Enum;
 
-export namespace Enigma {
+import Enigma.Util.Concepts;
 
-	template<typename Enum>
-	concept Enumeration = std::is_enum_v<Enum>;
+export namespace Enigma {
 
 	/**
 	 * @brief Retrieves the underlying value of a enum type
@@ -41,7 +45,8 @@ export namespace Enigma {
 	 *
 	 * @return Returns an Enum object with the underlying value given
 	 */
-	template<Enumeration Enum, std::integral Type> auto to_Enum(Type value) noexcept {
+	template<Enumeration Enum, std::integral Type>
+	auto to_Enum(Type value) noexcept {
 		return static_cast<Enum>(value);
 	}
 	/**
@@ -61,36 +66,38 @@ export namespace Enigma {
 	// Vector-based Implementations
 	//
 
-	template<Enumeration Enum> constexpr auto joinFlags(std::vector<Enum> flags) noexcept {
-		std::underlying_type_t<Enum> result = 0;
+	template<std::ranges::range Container>
+	constexpr auto joinFlags(Container flags) noexcept {
+		typedef Container::value_type Enum;
+		std::underlying_type_t<Enum>  result = 0;
 		for(auto flag : flags)
 			result |= to_value(flag);
 		return to_Enum<Enum>(result);
 	}
-	template<Enumeration Enum> constexpr auto removeFlags(Enum flag, std::vector<Enum> toRemove) noexcept {
-		std::underlying_type_t<Enum> result = to_value(flag);
+	template<Enumeration Flag, std::ranges::range Container>
+	constexpr auto removeFlags(Flag flag, Container toRemove) noexcept {
+		std::underlying_type_t<Flag> result = to_value(flag);
 		for(auto remove : toRemove)
 			result &= ~to_value(remove);
-		return to_Enum<Enum> (result);
+		return to_Enum<Flag>(result);
 	}
-	template<Enumeration Flag> constexpr bool hasAll(Flag toCheck, std::vector<Flag> check) noexcept {
+	template<typename Flag, std::ranges::range Container>
+	constexpr bool hasAll(Flag toCheck, Container check) noexcept {
 		for(auto value : check)
-			if(!hasFlag(toCheck, value))
-				return false;
+			if(!hasFlag(toCheck, value)) return false;
 		return true;
 	}
-	template<Enumeration Flag> constexpr bool hasAny(Flag toCheck, std::vector<Flag> check) noexcept {
+	template<typename Flag, std::ranges::range Container>
+		requires std::is_same_v<Flag, Container::value_type>
+	constexpr bool hasAny(Flag toCheck, Container check) noexcept {
 		for(auto value : check)
-			if(hasFlag(toCheck, value))
-				return true;
+			if(hasFlag(toCheck, value)) return true;
 		return false;
 	}
-	
-		
+
 	////
 	//// Variadic-based Implementations
 	////
-
 
 	/**
 	 * @brief Joins a series of enums together (via bitwise OR)
@@ -100,7 +107,8 @@ export namespace Enigma {
 	 *
 	 * @return The joined flags
 	 */
-	template<Enumeration...Flag> constexpr auto joinFlags(Flag...flags) noexcept {
+	template<Enumeration... Flag>
+	constexpr auto joinFlags(Flag... flags) noexcept {
 		// Get the first type by using std::tuple
 		typedef std::tuple_element_t<0, std::tuple<Flag...>> EnumType;
 		// Should be expanded to:
@@ -118,11 +126,12 @@ export namespace Enigma {
 	 *
 	 * @return New flag type without specified flags
 	 */
-	template<Enumeration Flag, Enumeration...Other>
-	constexpr Flag removeFlags(Flag flag, Other...toRemove) noexcept {
+	template<Enumeration Flag, Enumeration... Other>
+	constexpr Flag removeFlags(Flag flag, Other... toRemove) noexcept {
 		// Should be expanded to:
 		// (toCheck & flag1) && (toCheck & flag2) && ... && (toCheck & flagN)
-		return to_Enum<Flag>(to_value(flag) & ~to_value(joinFlags(toRemove...)));
+		return to_Enum<Flag>(to_value(flag) &
+							 ~to_value(joinFlags(toRemove...)));
 	}
 	/**
 	 * @brief Checks if all the specified values are present in the flag
@@ -135,7 +144,8 @@ export namespace Enigma {
 	 *
 	 * @return Whether all specified values were detected (true) or not (false)
 	 */
-	template<Enumeration Flag, Enumeration...Others> constexpr bool hasAll(Flag toCheck, Others...check) noexcept {
+	template<Enumeration Flag, Enumeration... Others>
+	constexpr bool hasAll(Flag toCheck, Others... check) noexcept {
 		// Should be expanded to:
 		// (toCheck & flag1) && (toCheck & flag2) && ... && (toCheck & flagN)
 		return (hasFlag(toCheck, check) && ...);
@@ -151,7 +161,8 @@ export namespace Enigma {
 	 *
 	 * @return Whether any specified values were detected (true) or not (false)
 	 */
-	template<Enumeration Flag, Enumeration...Others> constexpr bool hasAny(Flag toCheck, Others...check) noexcept {
+	template<Enumeration Flag, Enumeration... Others>
+	constexpr bool hasAny(Flag toCheck, Others... check) noexcept {
 		// Should be expanded to:
 		// (toCheck & flag1) || (toCheck & flag2) || ... || (toCheck & flagN)
 		return (hasFlag(toCheck, check) || ...);
