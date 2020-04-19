@@ -39,6 +39,8 @@ target_compile_definitions(libEnigma PRIVATE
 # Set the list of source files
 set(ENIGMA_SOURCE_INTERFACE
     "src/EnumUtil.cxx"
+    
+    "src/System/OperatingSystem.cxx"
     "src/Maths/Geometry.cxx" 
 )
 set(ENIGMA_SOURCE_IMPLEMENTATION
