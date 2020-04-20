@@ -1,20 +1,35 @@
-#include <gtest/gtest.h>
-
 #include "Utility.h"
 
-#include <ranges>
-#include <range/v3/all.hpp>
+#include <gtest/gtest.h>
+#include <iostream>
+
 #include <range/v3/action.hpp>
+#include <range/v3/all.hpp>
 
 import Enigma.Util.Enum;
+import Enigma.Util.Concepts;
 
 struct EnumUtility : public Utility { };
 
+template<typename Type>
+std::ostream& operator<<(std::ostream& os, std::vector<Type> list) {
+	os << "[";
+	for(int i = 0; i < list.size() - 1; i++)
+		os << list[i] << ", ";
+
+	os << list.back() << "]";
+	return os;
+}
+template<Enigma::Enumeration Enum>
+std::ostream& operator<<(std::ostream& os, Enum value) {
+	return os << Enigma::to_value(value);
+}
+
 enum class TestEnum {
 	Null = 0b0000000,
-	A    = 0b0000001,
-	B    = 0b0001000,
-	C    = 0b1000000,
+	A	 = 0b0000001,
+	B	 = 0b0001000,
+	C	 = 0b1000000,
 	AB   = 0b0001001,
 	AC   = 0b1000001,
 	BC   = 0b1001000,
@@ -46,47 +61,56 @@ TEST_F(EnumUtility, toEnum) {
 
 TEST_F(EnumUtility, Inversibility_enum) {
 	EXPECT_EQ(TestEnum::Null, Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::Null)));
-	EXPECT_EQ(TestEnum::A,    Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::A  )));
-	EXPECT_EQ(TestEnum::B,    Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::B  )));
-	EXPECT_EQ(TestEnum::C,    Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::C  )));
-	EXPECT_EQ(TestEnum::AB,   Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::AB )));
-	EXPECT_EQ(TestEnum::AC,   Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::AC )));
-	EXPECT_EQ(TestEnum::BC,   Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::BC )));
-	EXPECT_EQ(TestEnum::ABC,  Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::ABC)));
+	EXPECT_EQ(TestEnum::A,    Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::A   )));
+	EXPECT_EQ(TestEnum::B,    Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::B   )));
+	EXPECT_EQ(TestEnum::C,    Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::C   )));
+	EXPECT_EQ(TestEnum::AB,   Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::AB  )));
+	EXPECT_EQ(TestEnum::AC,   Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::AC  )));
+	EXPECT_EQ(TestEnum::BC,   Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::BC  )));
+	EXPECT_EQ(TestEnum::ABC,  Enigma::to_Enum<TestEnum>(Enigma::to_value(TestEnum::ABC )));
 }
 TEST_F(EnumUtility, Inversibility_value) {
-	// Tests that passing to_value result straight back to 
+	// Tests that passing to_value result straight back to
 	// to_enum gives original result and vise versa
 
 	// Randomly generate some numbers
 	std::random_device dev;
-	std::mt19937 rng(dev());
+	std::mt19937	   rng(dev());
 
-	for(int i : ranges::views::generate([&] { return rng(); }) | ranges::views::take(400))
+	for(int i : ranges::views::generate([&] { return rng(); }) |
+				ranges::views::take(400))
 		EXPECT_EQ(i, Enigma::to_value(Enigma::to_Enum<TestEnum>(i)));
 }
 
 TEST_F(EnumUtility, HasFlag) {
 	std::random_device dev;
-	std::mt19937 rng(dev());
+	std::mt19937	   rng(dev());
 
-	// Should expect that passing any series of bits to a null flag should return false
+	// Should expect that passing any series of bits to a null flag should
+	// return false
 	for(int i : ranges::views::generate([&] { return rng(); }) |
-			    ranges::views::take(400))
+				ranges::views::take(400))
 		EXPECT_FALSE(Enigma::hasFlag(TestEnum::Null, Enigma::to_Enum<TestEnum>(i)));
 
-	// Shouid expect that all sequence of bits except for our test bit to be false
-	
-	auto testRange = ranges::views::iota(0, (int) sizeof(int) * 8 - 1) |
-					 ranges::views::transform([](int i) { return 0b1 << i; }); //Just keep shifting bits along
+	// Shouid expect that all sequence of bits except for our test bit to be
+	// false
 
-	for(int i : testRange) {// Go through range of bits positions
+	auto testRange = ranges::views::iota(0, (int) sizeof(int) * 8 - 1) |
+					 ranges::views::transform([](int i) {
+						 return 0b1 << i;
+					 }); // Just keep shifting bits along
+
+	for(int i : testRange) { // Go through range of bits positions
 		// Expect when the bit of interest is 1 => True
-		EXPECT_TRUE(Enigma::hasFlag(Enigma::to_Enum<TestEnum>(i), Enigma::to_Enum<TestEnum>(i)));
+		EXPECT_TRUE(Enigma::hasFlag(
+			Enigma::to_Enum<TestEnum>(i), Enigma::to_Enum<TestEnum>(i)
+		));
 
 		// Expect when the bit of interest is 0 => False
 		for(int j : testRange | ranges::views::remove_if([i](int val) { return val == i; }))
-			EXPECT_FALSE(Enigma::hasFlag(Enigma::to_Enum<TestEnum>(i), Enigma::to_Enum<TestEnum>(j)));
+			EXPECT_FALSE(Enigma::hasFlag(
+				Enigma::to_Enum<TestEnum>(i), Enigma::to_Enum<TestEnum>(j)
+			));
 	}
 }
 
@@ -95,92 +119,109 @@ TEST_F(EnumUtility, HasFlag) {
 //
 
 TEST_F(EnumUtility, joinFlag_vector) {
-	EXPECT_EQ(
-		TestEnum::ABC,
-		Enigma::joinFlags(std::vector{ TestEnum::A, TestEnum::B, TestEnum::C })
-	);
-	EXPECT_EQ(
-		TestEnum::AB,
-		Enigma::joinFlags(std::vector{ TestEnum::A, TestEnum::B })
-	);
-	EXPECT_EQ(
-		TestEnum::AC,
-		Enigma::joinFlags(std::vector{ TestEnum::A, TestEnum::C })
-	);
-	EXPECT_EQ(
-		TestEnum::BC,
-		Enigma::joinFlags(std::vector{ TestEnum::B, TestEnum::C })
-	);
+	EXPECT_EQ(TestEnum::ABC, Enigma::joinFlags(std::vector{ TestEnum::A, TestEnum::B, TestEnum::C }));
+	EXPECT_EQ(TestEnum::AB,  Enigma::joinFlags(std::vector{ TestEnum::A, TestEnum::B }));
+	EXPECT_EQ(TestEnum::AC,  Enigma::joinFlags(std::vector{ TestEnum::A, TestEnum::C }));
+	EXPECT_EQ(TestEnum::BC,  Enigma::joinFlags(std::vector{ TestEnum::B, TestEnum::C }));
 }
 
 TEST_F(EnumUtility, removeFlag_vector) {
-	// Test passing one parameter 
-	EXPECT_EQ(
-		TestEnum::AC,
-		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::B })
-	);
-	EXPECT_EQ(
-		TestEnum::AB,
-		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::C })
-	);
-	EXPECT_EQ(
-		TestEnum::AB,
-		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::C })
-	);
+	// Test passing one parameter
+	EXPECT_EQ(TestEnum::AC, Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::B }));
+	EXPECT_EQ(TestEnum::AB, Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::C }));
+	EXPECT_EQ(TestEnum::AB, Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::C }));
 
-	// Test passing two parameters 
-	EXPECT_EQ(
-		TestEnum::A,
-		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::B, TestEnum::C })
-	);
-	EXPECT_EQ(
-		TestEnum::B,
-		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::A, TestEnum::C })
-	);
-	EXPECT_EQ(
-		TestEnum::C,
-		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::A, TestEnum::B })
-	);
+	// Test passing two parameters
+	EXPECT_EQ(TestEnum::A, Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::B, TestEnum::C }));
+	EXPECT_EQ(TestEnum::B, Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::A, TestEnum::C }));
+	EXPECT_EQ(TestEnum::C, Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::A, TestEnum::B }));
 
 	// Test passing all three parameters
-	EXPECT_EQ(
-		TestEnum::Null,
-		Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::A, TestEnum::B, TestEnum::C })
-	);
+	EXPECT_EQ(TestEnum::Null, Enigma::removeFlags(TestEnum::ABC, std::vector{ TestEnum::A, TestEnum::B, TestEnum::C }));
 	// Test passing an arbitrary sequence of bits
-	EXPECT_EQ(
-		TestEnum::Null,
-		Enigma::removeFlags(TestEnum::ABC, std::vector{Enigma::to_Enum<TestEnum>(0b1111111) })
-	);
+	EXPECT_EQ(TestEnum::Null, Enigma::removeFlags(TestEnum::ABC, std::vector{ Enigma::to_Enum<TestEnum>(0b1111111) }));
 }
 
 TEST_F(EnumUtility, hasAny_vector) {
 	std::random_device dev;
-	std::mt19937 rng(dev());
+	std::mt19937	   rng(dev());
 
 	// Generate list of random enums
 	// Select random subset of the list which we will test against
+	// n.b. We use a small number in the test to avoid setting all the bits to 1
 
-	auto randomMaster = std::views::generate([&] { return rng(); }) |
-						std::views::transform([](int i) { return static_cast<TestEnum>(i); }) |
-						std::views::take(20); 
-	auto toCheckList  = randomMaster | std::views::sample(20);
-	auto remainder    = std::views::set_intersection(randomMaster, toCheckList);
-	auto toCheck      = Enigma::joinFlags(toCheckList | ranges::to<std::vector>());
+	auto randomMaster = ranges::views::generate([&] { return rng(); }) |
+						ranges::views::transform([](int i) { return static_cast<TestEnum>(i); }) |
+						ranges::views::take(10) |
+						ranges::to<std::vector> |
+						ranges::actions::unique;
+	auto toCheckList  = randomMaster | 
+		                ranges::views::sample(4) |
+					    ranges::to<std::vector>;
+	auto remainder    = randomMaster |
+						ranges::views::remove_if([&toCheckList](auto i) {
+							return ranges::find(toCheckList, i) != ranges::end(toCheckList);
+						}) | ranges::to<std::vector>;
+	auto subset       = toCheckList | 
+		                ranges::views::sample(2) |
+					    ranges::to<std::vector>;
+	auto toCheck      = Enigma::joinFlags(toCheckList);
 
-	// Test against those not in the subset => Expect false (none in list)
-	// Test against all those in the subset => Expect true (has all in selected list)
-	// Test against subset of those in subset => Expect true (some present)
+	std::cout << "randomMaster: " << randomMaster << std::endl
+			  << "toCheckList: "  << toCheckList  << std::endl
+			  << "remainder: "    << remainder	  << std::endl
+			  << "subset: "       << subset		  << std::endl;
+
+	// Test against all those in the subset   => Expect true (has all in selected list) 
+	// Test against subset of those in subset => Expect true (all being tested for are present)
+	// Test against subset + some extra       => Expect true (those in subset are present)
+	// Test against those not in the subset   => Expect false (none in list)
+
+	EXPECT_TRUE(Enigma::hasAny(toCheck, toCheckList));
+	EXPECT_TRUE(Enigma::hasAny(toCheck, subset));
+	EXPECT_TRUE(Enigma::hasAny(toCheck, randomMaster));
+	EXPECT_FALSE(Enigma::hasAny(toCheck, remainder));
 }
 
 TEST_F(EnumUtility, hasAll_vector) {
+	std::random_device dev;
+	std::mt19937	   rng(dev());
+
 	// Generate list of random enums
 	// Select random subset of the list which we will test against
+	// n.b. We use a small number in the test to avoid setting all the bits to 1
 
-	// Test against those not in the subset => Expect false (none in list)
-	// Test against all those in the subset => Expect true (has all in selected list)
-	// Test against subset of those in subset => Expect true (all those being tested for are present)
-	// Test against subset + some extra => Expect false
+	auto randomMaster = ranges::views::generate([&] { return rng(); }) |
+						ranges::views::transform([](int i) { return static_cast<TestEnum>(i); }) |
+						ranges::views::take(10) |
+						ranges::to<std::vector> |
+						ranges::actions::unique;
+	auto toCheckList  = randomMaster | 
+		                ranges::views::sample(4) |
+					    ranges::to<std::vector>;
+	auto remainder    = randomMaster |
+						ranges::views::remove_if([&toCheckList](auto i) {
+							return ranges::find(toCheckList, i) != ranges::end(toCheckList);
+						}) | ranges::to<std::vector>;
+	auto subset       = toCheckList | 
+		                ranges::views::sample(2) |
+					    ranges::to<std::vector>;
+	auto toCheck      = Enigma::joinFlags(toCheckList);
+
+	std::cout << "randomMaster: " << randomMaster << std::endl
+			  << "toCheckList: "  << toCheckList  << std::endl
+			  << "remainder: "    << remainder	  << std::endl
+			  << "subset: "       << subset		  << std::endl;
+
+	// Test against all those in the subset     => Expect true (has all in selected list) 
+	// Test against subset of those in subset   => Expect true (all being tested for are present) 
+	// Test against subset + some extra         => Expect false
+	// Test against all those not in the subset => Expect false (none in list)
+
+	EXPECT_TRUE(Enigma::hasAll(toCheck, toCheckList));
+	EXPECT_TRUE(Enigma::hasAll(toCheck, subset));
+	EXPECT_FALSE(Enigma::hasAll(toCheck, randomMaster));
+	EXPECT_FALSE(Enigma::hasAll(toCheck, remainder));
 }
 
 //
@@ -188,64 +229,28 @@ TEST_F(EnumUtility, hasAll_vector) {
 //
 
 TEST_F(EnumUtility, joinFlag_vararg) {
-	EXPECT_EQ(
-		TestEnum::ABC,
-		Enigma::joinFlags(TestEnum::A, TestEnum::B, TestEnum::C)
-	);
-	EXPECT_EQ(
-		TestEnum::AB,
-		Enigma::joinFlags(TestEnum::A, TestEnum::B)
-	);
-	EXPECT_EQ(
-		TestEnum::AC,
-		Enigma::joinFlags(TestEnum::A, TestEnum::C)
-	);
-	EXPECT_EQ(
-		TestEnum::BC,
-		Enigma::joinFlags(TestEnum::B, TestEnum::C)
-	);
+	EXPECT_EQ(TestEnum::ABC, Enigma::joinFlags(TestEnum::A, TestEnum::B, TestEnum::C));
+	EXPECT_EQ(TestEnum::AB,  Enigma::joinFlags(TestEnum::A, TestEnum::B));
+	EXPECT_EQ(TestEnum::AC,  Enigma::joinFlags(TestEnum::A, TestEnum::C));
+	EXPECT_EQ(TestEnum::BC,  Enigma::joinFlags(TestEnum::B, TestEnum::C));
 }
 
 /**
- * Tests that removing a flag produces the expected result 
+ * Tests that removing a flag produces the expected result
  */
 TEST_F(EnumUtility, removeFlag_vararg) {
-	// Test passing one parameter 
-	EXPECT_EQ(
-		TestEnum::AC,
-		Enigma::removeFlags(TestEnum::ABC, TestEnum::B)
-	);
-	EXPECT_EQ(
-		TestEnum::AB,
-		Enigma::removeFlags(TestEnum::ABC, TestEnum::C)
-	);
-	EXPECT_EQ(
-		TestEnum::AB,
-		Enigma::removeFlags(TestEnum::ABC, TestEnum::C)
-	);
+	// Test passing one parameter
+	EXPECT_EQ(TestEnum::AC, Enigma::removeFlags(TestEnum::ABC, TestEnum::B));
+	EXPECT_EQ(TestEnum::AB, Enigma::removeFlags(TestEnum::ABC, TestEnum::C));
+	EXPECT_EQ(TestEnum::AB, Enigma::removeFlags(TestEnum::ABC, TestEnum::C));
 
-	// Test passing two parameters 
-	EXPECT_EQ(
-		TestEnum::A,
-		Enigma::removeFlags(TestEnum::ABC, TestEnum::B, TestEnum::C)
-	);
-	EXPECT_EQ(
-		TestEnum::B,
-		Enigma::removeFlags(TestEnum::ABC, TestEnum::A, TestEnum::C)
-	);
-	EXPECT_EQ(
-		TestEnum::C,
-		Enigma::removeFlags(TestEnum::ABC, TestEnum::A, TestEnum::B)
-	);
+	// Test passing two parameters
+	EXPECT_EQ(TestEnum::A, Enigma::removeFlags(TestEnum::ABC, TestEnum::B, TestEnum::C));
+	EXPECT_EQ(TestEnum::B, Enigma::removeFlags(TestEnum::ABC, TestEnum::A, TestEnum::C));
+	EXPECT_EQ(TestEnum::C, Enigma::removeFlags(TestEnum::ABC, TestEnum::A, TestEnum::B));
 
 	// Test passing all three parameters
-	EXPECT_EQ(
-		TestEnum::Null,
-		Enigma::removeFlags(TestEnum::ABC, TestEnum::A, TestEnum::B, TestEnum::C)
-	);
+	EXPECT_EQ(TestEnum::Null, Enigma::removeFlags(TestEnum::ABC, TestEnum::A, TestEnum::B, TestEnum::C));
 	// Test passing an arbitrary sequence of bits
-	EXPECT_EQ(
-		TestEnum::Null,
-		Enigma::removeFlags(TestEnum::ABC, Enigma::to_Enum<TestEnum>(0b1111111))
-	);
+	EXPECT_EQ(TestEnum::Null, Enigma::removeFlags(TestEnum::ABC, Enigma::to_Enum<TestEnum>(0b1111111)));
 }

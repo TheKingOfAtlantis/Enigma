@@ -58,8 +58,12 @@ export namespace Enigma {
 	 *
 	 * @return Whether it was detected (true) or not (false)
 	 */
-	template<Enumeration Flag> constexpr bool hasFlag(Flag toCheck, Flag check) noexcept {
-		return to_value(toCheck) & to_value(check);
+	template<Enumeration Flag>
+	constexpr bool hasFlag(Flag toCheck, Flag check) noexcept {
+		// Use & to get similar bits
+		// Then check that the similar bits equal the same value
+		auto val = to_value(check);
+		return (to_value(toCheck) & val) == val;
 	}
 
 	//
@@ -81,14 +85,13 @@ export namespace Enigma {
 			result &= ~to_value(remove);
 		return to_Enum<Flag>(result);
 	}
-	template<typename Flag, std::ranges::range Container>
+	template<Enumeration Flag, std::ranges::range Container>
 	constexpr bool hasAll(Flag toCheck, Container check) noexcept {
 		for(auto value : check)
 			if(!hasFlag(toCheck, value)) return false;
 		return true;
 	}
-	template<typename Flag, std::ranges::range Container>
-		requires std::is_same_v<Flag, Container::value_type>
+	template<Enumeration Flag, std::ranges::range Container>
 	constexpr bool hasAny(Flag toCheck, Container check) noexcept {
 		for(auto value : check)
 			if(hasFlag(toCheck, value)) return true;
@@ -130,8 +133,7 @@ export namespace Enigma {
 	constexpr Flag removeFlags(Flag flag, Other... toRemove) noexcept {
 		// Should be expanded to:
 		// (toCheck & flag1) && (toCheck & flag2) && ... && (toCheck & flagN)
-		return to_Enum<Flag>(to_value(flag) &
-							 ~to_value(joinFlags(toRemove...)));
+		return to_Enum<Flag>(to_value(flag) & ~to_value(joinFlags(toRemove...)));
 	}
 	/**
 	 * @brief Checks if all the specified values are present in the flag
@@ -167,4 +169,4 @@ export namespace Enigma {
 		// (toCheck & flag1) || (toCheck & flag2) || ... || (toCheck & flagN)
 		return (hasFlag(toCheck, check) || ...);
 	}
-}
+} // namespace Enigma

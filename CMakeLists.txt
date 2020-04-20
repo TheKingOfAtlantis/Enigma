@@ -12,8 +12,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 ### Build and setup the library ###
 ###################################
 
-add_library(libEnigma STATIC "")
-
 # Find dependencies:
 #  - Vulkan
 #  - Range-v3
@@ -21,30 +19,6 @@ add_library(libEnigma STATIC "")
 find_package(Vulkan REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
 
-target_include_directories(libEnigma PRIVATE Vulkan::Vulkan)
-
-target_link_libraries(libEnigma
-	PRIVATE Vulkan::Vulkan
-	        range-v3 range-v3-meta range-v3::meta range-v3-concepts
-)
-
-#
-# Setup compiler preprocessor defintions
-#
-
-target_compile_definitions(libEnigma PRIVATE
-    $<$<PLATFORM_ID:Windows>:VK_USE_PLATFORM_WIN32_KHR>
-)
-
-# Set the list of source files
-set(ENIGMA_SOURCE_INTERFACE
-    "src/EnumUtil.cxx"
-    
-    "src/System/OperatingSystem.cxx"
-    "src/Maths/Geometry.cxx" 
-)
-set(ENIGMA_SOURCE_IMPLEMENTATION
-)
 
 # Set the compiler flags
 if(MSVC)
@@ -55,7 +29,7 @@ if(MSVC)
     set(ENIGMA_COMPILER_FLAGS_MODULE           "/experimental:module")                           # Enables support for C++20 modules
     set(ENIGMA_COMPILER_FLAGS_MODULE_SEARCH    "/module:search" ${CMAKE_CURRENT_BINARY_DIR})     # Specifies the search path for precompiled modules
     set(ENIGMA_COMPILER_FLAGS_MODULE_INTERFACE "/module:interface")                              # Specifies that a file in a module interface (regardless of file extension)
-    set(ENIGMA_COMPILER_FLAGS_DEBUG            "/JMC" "/Zi")                                     # Enables "Just my code" debugging and "Edit and Continue" support
+    set(ENIGMA_COMPILER_FLAGS_DEBUG            "/JMC" "/ZI")                                     # Enables "Just my code" debugging and "Edit and Continue" support
 else()
     set(ENIGMA_COMPILER_FLAGS_WARNING         )
     set(ENIGMA_COMPILER_FLAGS_INSTRUCTION_SET )
@@ -82,12 +56,9 @@ set(ENIGMA_PUBLIC_COMPILER_FLAGS  ${ENIGMA_COMPILER_FLAGS} ${ENIGMA_COMPILER_FLA
 set(ENIGMA_PRIVATE_COMPILER_FLAGS ${ENIGMA_COMPILER_FLAGS})											  # The flags required for the module implementation units
 
 # Replaces the semi-colons with spaces
-string (REPLACE ";" " " ENIGMA_COMPILER_FLAGS "${ENIGMA_COMPILER_FLAGS}")
-string (REPLACE ";" " " ENIGMA_PUBLIC_COMPILER_FLAGS "${ENIGMA_PUBLIC_COMPILER_FLAGS}")
-string (REPLACE ";" " " ENIGMA_PRIVATE_COMPILER_FLAGS "${ENIGMA_PRIVATE_COMPILER_FLAGS}")
-
-set_property(SOURCE ${ENIGMA_SOURCE_INTERFACE}      PROPERTY COMPILE_FLAGS ${ENIGMA_PUBLIC_COMPILER_FLAGS})
-set_property(SOURCE ${ENIGMA_SOURCE_IMPLEMENTATION} PROPERTY COMPILE_FLAGS ${ENIGMA_PRIVATE_COMPILER_FLAGS})
+string(REPLACE ";" " " ENIGMA_COMPILER_FLAGS         "${ENIGMA_COMPILER_FLAGS}")
+string(REPLACE ";" " " ENIGMA_PUBLIC_COMPILER_FLAGS  "${ENIGMA_PUBLIC_COMPILER_FLAGS}")
+string(REPLACE ";" " " ENIGMA_PRIVATE_COMPILER_FLAGS "${ENIGMA_PRIVATE_COMPILER_FLAGS}")
 
 # Setup any preprocessor definitions
 # First based on OS
@@ -98,14 +69,54 @@ if(WIN32)
 endif()
 
 if(WIN32)
-    add_compile_definitions(_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+    add_compile_definitions(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
 endif()
 
-target_sources(libEnigma
-	PRIVATE ${ENIGMA_SOURCE_INTERFACE}
-	        ${ENIGMA_SOURCE_IMPLEMENTATION}
+#
+# Build the library
+#
+
+
+add_library(libEnigma STATIC "")
+
+
+# Setup compiler preprocessor defintions
+
+target_compile_definitions(libEnigma PRIVATE
+    $<$<PLATFORM_ID:Windows>:VK_USE_PLATFORM_WIN32_KHR>
 )
 
+# Set library dependencies
+
+target_include_directories(libEnigma PRIVATE Vulkan::Vulkan)
+
+target_link_libraries(libEnigma
+ PRIVATE Vulkan::Vulkan
+         range-v3 range-v3-meta range-v3::meta range-v3-concepts
+)
+
+
+# Set the list of source files
+set(ENIGMA_SOURCE_INTERFACE
+    "src/Concepts.cxx"
+    "src/EnumUtil.cxx"
+    
+    "src/System/OperatingSystem.cxx"
+    
+    "src/Maths/Geometry.cxx" 
+ )
+
+set(ENIGMA_SOURCE_IMPLEMENTATION
+
+)
+
+set_property(SOURCE ${ENIGMA_SOURCE_INTERFACE}      PROPERTY COMPILE_FLAGS ${ENIGMA_PUBLIC_COMPILER_FLAGS})
+set_property(SOURCE ${ENIGMA_SOURCE_IMPLEMENTATION} PROPERTY COMPILE_FLAGS ${ENIGMA_PRIVATE_COMPILER_FLAGS})
+
+target_sources(libEnigma
+    PRIVATE ${ENIGMA_SOURCE_INTERFACE}
+            ${ENIGMA_SOURCE_IMPLEMENTATION}
+)
 
 #
 # Build the examples
@@ -117,4 +128,24 @@ add_subdirectory(example/triangles)
 # Build and run the tests
 #
 
-add_subdirectory(test)
+enable_testing()
+
+set(ENIGMA_SOURCE_TESTS
+    "test/main.cpp"
+    
+    "test/test_enumUtil.cpp"
+)
+add_executable(testEnigma ${ENIGMA_SOURCE_TESTS})
+
+set_property(SOURCE ${ENIGMA_SOURCE_TESTS} PROPERTY COMPILE_FLAGS ${ENIGMA_COMPILER_FLAGS})
+
+include(GoogleTest)
+find_package(GTest CONFIG REQUIRED)
+
+target_link_libraries(testEnigma 
+    PRIVATE libEnigma
+    PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main
+            range-v3 range-v3-meta range-v3::meta range-v3-concepts
+)
+
+gtest_discover_tests(testEnigma)
