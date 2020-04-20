@@ -100,6 +100,7 @@ target_link_libraries(libEnigma
 set(ENIGMA_SOURCE_INTERFACE
     "src/Concepts.cxx"
     "src/EnumUtil.cxx"
+    "src/StringUtil.cxx"
     "src/Noncopyable.cxx"
     
     "src/System/OperatingSystem.cxx"
@@ -133,8 +134,9 @@ enable_testing()
 
 set(ENIGMA_SOURCE_TESTS
     "test/main.cpp"
-    
+
     "test/test_enumUtil.cpp"
+    "test/test_stringUtil.cpp"
 )
 add_executable(testEnigma ${ENIGMA_SOURCE_TESTS})
 
