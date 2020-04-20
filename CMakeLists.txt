@@ -100,6 +100,7 @@ target_link_libraries(libEnigma
 set(ENIGMA_SOURCE_INTERFACE
     "src/Concepts.cxx"
     "src/EnumUtil.cxx"
+    "src/Noncopyable.cxx"
     
     "src/System/OperatingSystem.cxx"
     
