@@ -104,6 +104,7 @@ set(ENIGMA_SOURCE_INTERFACE
     "src/Noncopyable.cxx"
     
     "src/System/OperatingSystem.cxx"
+    "src/Memory/ObserverPtr.cxx"
     
     "src/Maths/Geometry.cxx" 
  )
