@@ -103,7 +103,10 @@ set(ENIGMA_SOURCE_INTERFACE
     "src/StringUtil.cxx"
     "src/Noncopyable.cxx"
     
+    "include/Enigma/System/Macros.hpp"
     "src/System/OperatingSystem.cxx"
+    "src/System/Handle.cxx"
+
     "src/Memory/ObserverPtr.cxx"
     
     "src/Maths/Geometry.cxx" 
@@ -120,6 +123,7 @@ target_sources(libEnigma
     PRIVATE ${ENIGMA_SOURCE_INTERFACE}
             ${ENIGMA_SOURCE_IMPLEMENTATION}
 )
+target_include_directories(libEnigma PUBLIC "include/")
 
 #
 # Build the examples
