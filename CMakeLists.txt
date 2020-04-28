@@ -97,7 +97,13 @@ target_link_libraries(libEnigma
 
 
 # Set the list of source files
+set(ENIGMA_HEADERS
+    "include/Enigma/System/Macros.hpp"
+    "include/Enigma/System/Includes.hpp"
+)
 set(ENIGMA_SOURCE_INTERFACE
+    ${ENIGMA_HEADERS}
+
     "src/Concepts.cxx"
     "src/EnumUtil.cxx"
     "src/StringUtil.cxx"
@@ -109,10 +115,13 @@ set(ENIGMA_SOURCE_INTERFACE
 
     "src/Memory/ObserverPtr.cxx"
     
-    "src/Maths/Geometry.cxx"
-    
+    "src/Maths/Geometry.cxx" 
+
+    "src/Graphics/GraphicsType.cxx"
+
     "src/IO/Device/BaseDevice.cxx"
- )
+    "src/IO/Device/Display/BaseDisplay.cxx"
+)
 
 set(ENIGMA_SOURCE_IMPLEMENTATION
 
