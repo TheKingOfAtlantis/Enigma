@@ -6,7 +6,7 @@ import Enigma.Util.Noncopyable;
 import Enigma.System.Handle;
 
 export namespace Enigma::IO::Device {
-    class IDevice {
+    class IDevice : public INoncopyable {
         std::string ID;
         std::string Name;
 
