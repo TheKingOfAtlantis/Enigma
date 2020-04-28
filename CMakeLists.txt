@@ -109,7 +109,9 @@ set(ENIGMA_SOURCE_INTERFACE
 
     "src/Memory/ObserverPtr.cxx"
     
-    "src/Maths/Geometry.cxx" 
+    "src/Maths/Geometry.cxx"
+    
+    "src/IO/Device/BaseDevice.cxx"
  )
 
 set(ENIGMA_SOURCE_IMPLEMENTATION
