@@ -1,6 +1,6 @@
 
 #if defined(_WIN32)
-#include <Windows.h>
+#    include <Windows.h>
 #endif
 
 export module Enigma.Graphics.Types;
@@ -12,8 +12,8 @@ namespace Enigma::Graphics {
     export template<typename Type = int> struct Dimensions { Type width, height; };
     export template<typename Type = int> struct Boundary {
         Type left, top, right, bottom;
-    #if defined(_WIN32)
-        operator tagRECT() { return { (LONG)left, (LONG)top, (LONG)right, (LONG)bottom }; }
-    #endif
+#if defined(_WIN32)
+        operator tagRECT() { return { (LONG) left, (LONG) top, (LONG) right, (LONG) bottom }; }
+#endif
     };
-}
+} // namespace Enigma::Graphics
