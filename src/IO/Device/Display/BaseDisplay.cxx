@@ -1,11 +1,13 @@
+
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
 export module Enigma.IO.Device.Display:Base;
 
-import Enigma.IO.Device.Base;
 import Enigma.Graphics.Types;
+import Enigma.IO.Device.Base;
 
 export namespace Enigma::IO::Device {
     /**
@@ -52,15 +54,16 @@ export namespace Enigma::IO::Device {
      * in a platform-independent manner.
      */
     struct IDisplay : public IDevice {
-        typedef DisplayOrientation     Orientation; //!@brief Alias for DisplayOrientation
-        typedef Graphics::Boundary<>   Boundary;    //!@brief Represents a rectangle that defines a boundary
-        typedef Graphics::Dimensions<> Dimensions;  //!@brief Represents widths and heights
-        typedef Graphics::Position<>   Position;    //!@brief Represents Display position in virtual screen coordinates
-        typedef Graphics::Position<>   DPI;         //!@brief Represents display DPI (DPI#x is scaling in x and DPI#y is scaling in y)
+        typedef std::vector<VideoMode> VideoModeList; //!@brief List of VideoModes
+        typedef DisplayOrientation     Orientation;   //!@brief Alias for DisplayOrientation
+        typedef Graphics::Boundary<>   Boundary;      //!@brief Represents a rectangle that defines a boundary
+        typedef Graphics::Dimensions<> Dimensions;    //!@brief Represents widths and heights
+        typedef Graphics::Position<>   Position;      //!@brief Represents Display position in virtual screen coordinates
+        typedef Graphics::Position<>   DPI;           //!@brief Represents display DPI (DPI#x is scaling in x and DPI#y is scaling in y)
 
         IDisplay(std::string_view id, std::string_view name)
             : IDevice(id, name) { }
-        virtual ~IDisplay(){};
+        virtual ~IDisplay() { };
 
         // Getters
         /**
@@ -86,7 +89,7 @@ export namespace Enigma::IO::Device {
          * @brief Gets the a list of supported video mode
          * @details Retrieves the a list of VideoModes which this display has support for
          */
-        virtual std::vector<VideoMode> getSupportedModes() const noexcept = 0;
+        virtual const VideoModeList getSupportedModes() const noexcept = 0;
         /**
          * @brief Current orientation of this display
          * @return DisplayOrientation enum value depending on current orientation
@@ -173,7 +176,6 @@ export namespace Enigma::IO::Device {
          *       parameters it was designed for and avoids potential damage
          */
         virtual void setRefreshRate(float rate) = 0;
-
     };
     export typedef std::shared_ptr<IDisplay> DisplayPtr;
 } // namespace Enigma::IO::Device

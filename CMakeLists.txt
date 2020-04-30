@@ -102,14 +102,11 @@ set(ENIGMA_HEADERS
     "include/Enigma/System/Includes.hpp"
 )
 set(ENIGMA_SOURCE_INTERFACE
-    ${ENIGMA_HEADERS}
-
     "src/Concepts.cxx"
     "src/EnumUtil.cxx"
     "src/StringUtil.cxx"
     "src/Noncopyable.cxx"
     
-    "include/Enigma/System/Macros.hpp"
     "src/System/OperatingSystem.cxx"
     "src/System/Handle.cxx"
 
@@ -121,17 +118,20 @@ set(ENIGMA_SOURCE_INTERFACE
 
     "src/IO/Device/BaseDevice.cxx"
     "src/IO/Device/Display/BaseDisplay.cxx"
+    "src/IO/Device/Display/NullDisplay.cxx"
 )
 
 set(ENIGMA_SOURCE_IMPLEMENTATION
 
 )
 
+set_property(SOURCE ${ENIGMA_HEADERS}               PROPERTY COMPILE_FLAGS ${ENIGMA_COMPILER_FLAGS})
 set_property(SOURCE ${ENIGMA_SOURCE_INTERFACE}      PROPERTY COMPILE_FLAGS ${ENIGMA_PUBLIC_COMPILER_FLAGS})
 set_property(SOURCE ${ENIGMA_SOURCE_IMPLEMENTATION} PROPERTY COMPILE_FLAGS ${ENIGMA_PRIVATE_COMPILER_FLAGS})
 
 target_sources(libEnigma
-    PRIVATE ${ENIGMA_SOURCE_INTERFACE}
+    PRIVATE ${ENIGMA_HEADERS}
+            ${ENIGMA_SOURCE_INTERFACE}
             ${ENIGMA_SOURCE_IMPLEMENTATION}
 )
 target_include_directories(libEnigma PUBLIC "include/")
