@@ -108,6 +108,8 @@ set(ENIGMA_SOURCE_INTERFACE
     "src/Noncopyable.cxx"
     
     "src/System/OperatingSystem.cxx"
+    "src/System/Handle/CoreHandle.cxx"
+    "src/System/Handle/Win32Handle.cxx"
     "src/System/Handle.cxx"
 
     "src/Memory/ObserverPtr.cxx"
