@@ -1,4 +1,4 @@
-
+module;
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -10,6 +10,7 @@ import Enigma.Graphics.Types;
 import Enigma.IO.Device.Base;
 
 export namespace Enigma::IO::Device {
+
     /**
 	 * @brief Enum for the various possible display orientations
 	 */
@@ -54,12 +55,12 @@ export namespace Enigma::IO::Device {
      * in a platform-independent manner.
      */
     struct IDisplay : public IDevice {
-        typedef std::vector<VideoMode> VideoModeList; //!@brief List of VideoModes
-        typedef DisplayOrientation     Orientation;   //!@brief Alias for DisplayOrientation
-        typedef Graphics::Boundary<>   Boundary;      //!@brief Represents a rectangle that defines a boundary
-        typedef Graphics::Dimensions<> Dimensions;    //!@brief Represents widths and heights
-        typedef Graphics::Position<>   Position;      //!@brief Represents Display position in virtual screen coordinates
-        typedef Graphics::Position<>   DPI;           //!@brief Represents display DPI (DPI#x is scaling in x and DPI#y is scaling in y)
+        typedef std::vector<VideoMode>            VideoModeList; //!@brief List of VideoModes
+        typedef DisplayOrientation                Orientation;   //!@brief Alias for DisplayOrientation
+        typedef Graphics::Boundary<>              Boundary;      //!@brief Represents a rectangle that defines a boundary
+        typedef Graphics::Dimensions<>            Dimensions;    //!@brief Represents widths and heights
+        typedef Graphics::Position<>              Position;      //!@brief Represents Display position in virtual screen coordinates
+        typedef Graphics::Position<std::uint32_t> DPI;           //!@brief Represents display DPI (DPI#x is scaling in x and DPI#y is scaling in y)
 
         IDisplay(std::string_view id, std::string_view name)
             : IDevice(id, name) { }
@@ -146,15 +147,63 @@ export namespace Enigma::IO::Device {
          */
         virtual Position getPhysicalPosition() const noexcept = 0;
 
+        /**
+         * @brief Retrieves the values for the current display's brightness
+         * @return Tuple containing (in the following order) the minimum, 
+         *         maximum and current brighness
+         */
+        virtual std::tuple<int, int, int> getBrightness() const noexcept = 0;
+        /**
+         * @brief Retrieves the values for the current display's contrast
+         * @return Tuple containing (in the following order) the minimum, 
+         *         maximum and current brighness
+         */
+        virtual std::tuple<int, int, int> getContrast() const noexcept = 0;
+        /**
+         * @brief Retrieves the value for the current colour temperature of the display
+         * @return Colour temperature of the display in kelvin (K)
+         */
+        virtual int getColourTemperature() const noexcept = 0;
+
+        /**
+         * @brief Brightness as a fraction of the brighness space of the current display
+         * @details
+         * Determines the current brighness value of the current display as a fraction 
+         * of the brighness space (between min and max) which the current brighness value
+         * occupies
+         * @return Current brighness value
+         * @retval -1 if it couldn't be determined
+        */
+        virtual float getBrightnessFraction() const noexcept {
+            if(auto [min, max, current] = getBrightness(); 
+               min == -1 && max == -1 && current == -1)
+                return static_cast<float>(current - min) / static_cast<float>(max - min);
+            return -1;
+        }
+
         // Setters
         /**
          * @brief Set the current video mode
+         * @param [in] mode - Native object defining the new display configuration
+         * @note Ensure that video mode objects used are polled from getSupportedModes()
+         *       this ensures that users displays remains operating within the parameters
+         *       it was designed for and avoids potential damage
+         */
+        virtual void setVideoMode(void* mode) = 0;
+        /**
+         * @brief Set the current video mode
          * @param [in] mode - VideoMode object defining the new display configuration
+         * @note Pointer to the native object is ignored by this method
          * @note Ensure that video mode objects used are polled from getSupportedModes()
          *       this ensures that users displays remains operating within the parameters
          *       it was designed for and avoids potential damage
          */
         virtual void setVideoMode(VideoMode mode) = 0;
+        /**
+         * @brief Set the current display's orientation
+         * @param [in] orientation - The new orientation for the display
+         */
+        virtual void setOrientation(Orientation orientation) = 0;
         /**
          * @brief Set the current display's resolution
          * @param [in] resolution - Resolution to set the display to
@@ -163,11 +212,6 @@ export namespace Enigma::IO::Device {
          *       parameters it was designed for and avoids potential damage
          */
         virtual void setResolution(Dimensions resolution) = 0;
-        /**
-         * @brief Set the current display's orientation
-         * @param [in] orientation - The new orientation for the display
-         */
-        virtual void setOrientation(Orientation orientation) = 0;
         /**
          * @brief Set the refresh rate for the current display
          * @param [in] rate - The rate to set the refresh rate to
