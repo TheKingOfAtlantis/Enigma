@@ -122,6 +122,7 @@ set(ENIGMA_SOURCE_INTERFACE
     "src/IO/Device/BaseDevice.cxx"
     "src/IO/Device/Display/BaseDisplay.cxx"
     "src/IO/Device/Display/NullDisplay.cxx"
+    "src/IO/Device/Display/Win32Display.cxx"
 )
 
 set(ENIGMA_SOURCE_IMPLEMENTATION

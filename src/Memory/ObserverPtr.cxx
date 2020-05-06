@@ -1,4 +1,5 @@
 #include <memory>
+#include <concepts>
 
 export module Enigma.Memory.ObserverPtr;
 
@@ -17,6 +18,7 @@ export namespace Enigma::Memory {
     class ObserverPtr {
         Type* ptr;
     public:
+		typedef Type  element_type;
         typedef Type* pointer;
         typedef Type* reference;
 
@@ -26,6 +28,7 @@ export namespace Enigma::Memory {
 		 */
         constexpr ObserverPtr() noexcept
             : ptr(nullptr) { }
+
         /**
 		 * @brief Creates an instance of this non-owning pointer with no
 		 *        watched object
@@ -36,9 +39,16 @@ export namespace Enigma::Memory {
 		 * @brief Creates a non-owning pointer from a raw pointer
 		 * @param [in] pointer - Pointer to create non-owning smart pointer from
 		*/
-        template<typename U>
-        requires std::is_convertible_v<U, Type> constexpr ObserverPtr(U* pointer) noexcept
-            : ptr(pointer) { }
+		template<typename U>
+		constexpr ObserverPtr(U pointer) noexcept
+			: ptr(pointer) { }
+
+		template<typename U>
+			requires std::is_base_of_v<U, Type> ||
+				     std::is_base_of_v<Type, U>
+		constexpr explicit ObserverPtr(ObserverPtr<U> pointer) noexcept
+			: ptr(dynamic_cast<ObserverPtr<Type>::pointer>(pointer.ptr)) { }
+
         /**
 		 * @brief Creates a non-owning pointer from a shared_ptr
 		 * @param [in] sharedPtr - std::shared_ptr object to create an object from
@@ -65,9 +75,9 @@ export namespace Enigma::Memory {
 		 * @brief Sets this non-owning pointer to watch ptr
 		 * @param [in] ptr - Pointer to watch
 		 */
-        constexpr void reset(pointer ptr) { this->ptr = ptr; }
+        void reset(pointer ptr) { this->ptr = ptr; }
 
-        constexpr explicit operator bool() const { return ptr != nullptr; }
+        explicit operator bool() const { return ptr != nullptr; }
 
         reference operator*() { return *ptr; }
         reference operator->() { return *ptr; }
@@ -92,4 +102,10 @@ export namespace Enigma::Memory {
 		 */
         std::shared_ptr<Type> to_shared() { return std::make_shared(ptr); }
     };
+
+	template<std::constructible_from<Args...> T, typename...Args>
+	ObserverPtr<T> make_observable(Args&&... args) {
+		return ObserverPtr<T>(new T(std::forward<Args>(Args)...));
+	}
+
 } // namespace Enigma::Memory
