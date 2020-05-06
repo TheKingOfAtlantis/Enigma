@@ -1,0 +1,121 @@
+#BasedOnStyle: LLVM
+Language: Cpp
+#Standard: c++20
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: true
+
+AccessModifierOffset: -4
+
+# Basically want to align everything
+AlignAfterOpenBracket:        Align
+AlignConsecutiveAssignments:  true
+AlignConsecutiveDeclarations: true
+#AlignConsecutiveMacros:       true
+AlignEscapedNewlines:         Left
+AlignOperands:                true
+AlignTrailingComments:        true
+
+# Either we have arguments on the same line
+# Or you spread them out
+#
+# Allowed:
+# void f(int a, int b, int c); OR
+# void f(int a,
+#        int b,
+#        int c);
+#
+# Disallowed:
+# void f(
+# int a, int b, int c
+#);
+#
+#AllowAllArgumentsOnNextLine:               false
+#AllowAllConstructorInitializersOnNextLine: false 
+#AllowAllParametersOfDeclarationOnNextLine: false
+# We like it when short statements can be put onto one line
+# Just find it easier to read
+AllowShortBlocksOnASingleLine:       true #Always
+AllowShortCaseLabelsOnASingleLine:   true
+AllowShortIfStatementsOnASingleLine: true #Always
+#AllowShortLambdasOnASingleLine:      All      
+AllowShortLoopsOnASingleLine:        false
+
+AlwaysBreakAfterReturnType:        None
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations:   MultiLine
+BinPackArguments:                  false
+BinPackParameters:                 false
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+#    AfterCaseLabel: false
+    AfterClass: true
+    AfterControlStatement: false #Never
+    AfterEnum: false
+    AfterFunction: false
+    AfterNamespace: false
+    AfterStruct: false
+    AfterUnion: false
+    AfterExternBlock: false
+    BeforeCatch: false
+    BeforeElse: false
+#    BeforeLambdaBody: false
+    IndentBraces: false
+    SplitEmptyFunction: false
+    SplitEmptyRecord: false
+    SplitEmptyNamespace: false
+
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: AfterColon
+BreakStringLiterals: false
+CompactNamespaces: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+Cpp11BracedListStyle: false
+
+FixNamespaceComments: true
+
+IncludeBlocks: Regroup
+IncludeCategories: # Defines the ordering of header files
+                   # n.b. this may change
+  - Regex:           '^(<|"(gtest|gmock|isl|json)/)'
+    Priority:        3
+  - Regex:           '<[[:alnum:].]+>'
+    Priority:        4
+  - Regex:           '.*'
+    Priority:        1
+#    SortPriority:    0
+
+IndentCaseLabels: false
+IndentCaseLabels: false
+#IndentGotoLabels: true
+IndentPPDirectives: AfterHash
+IndentWrappedFunctionNames: false
+NamespaceIndentation: All
+PointerAlignment: Left
+
+
+ReflowComments: true
+SpacesBeforeTrailingComments: 1
+
+SpaceAfterCStyleCast:              true
+#SpaceAfterLogicalNot:              false
+SpaceAfterTemplateKeyword:         false
+SpaceBeforeAssignmentOperators:    true
+SpaceBeforeCpp11BracedList:        false
+SpaceBeforeCtorInitializerColon:   true
+SpaceBeforeInheritanceColon:       true
+SpaceBeforeParens:                 Never
+SpaceBeforeRangeBasedForLoopColon: true
+#SpaceBeforeSquareBrackets:         false
+#SpaceInEmptyBlock:                 true
+SpaceInEmptyParentheses:           false
+SpacesInAngles:                    false
+SpacesInCStyleCastParentheses:     false
+#SpacesInConditionalStatement:      false
+SpacesInContainerLiterals:         false
+SpacesInParentheses:               false
+SpacesInSquareBrackets:            false
