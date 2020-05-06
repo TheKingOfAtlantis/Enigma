@@ -100,6 +100,7 @@ target_link_libraries(libEnigma
 set(ENIGMA_HEADERS
     "include/Enigma/System/Macros.hpp"
     "include/Enigma/System/Includes.hpp"
+    "include/Enigma/Assert.h"
 )
 set(ENIGMA_SOURCE_INTERFACE
     "src/Concepts.cxx"
